@@ -2,39 +2,6 @@
 timezone: Asia/Shanghai
 ---
 
-> 请在上边的 timezone 添加你的当地时区，这会有助于你的打卡状态的自动化更新，如果没有添加，默认为北京时间 UTC+8 时区
-> 时区请参考以下列表，请移除 # 以后的内容
-
-timezone: Pacific/Honolulu # 夏威夷-阿留申标准时间 (UTC-10)
-
-timezone: America/Anchorage # 阿拉斯加夏令时间 (UTC-8)
-
-timezone: America/Los_Angeles # 太平洋夏令时间 (UTC-7)
-
-timezone: America/Denver # 山地夏令时间 (UTC-6)
-
-timezone: America/Chicago # 中部夏令时间 (UTC-5)
-
-timezone: America/New_York # 东部夏令时间 (UTC-4)
-
-timezone: America/Halifax # 大西洋夏令时间 (UTC-3)
-
-timezone: America/St_Johns # 纽芬兰夏令时间 (UTC-2:30)
-
-timezone: Asia/Dubai # 海湾标准时间 (UTC+4)
-
-timezone: Asia/Kolkata # 印度标准时间 (UTC+5:30)
-
-timezone: Asia/Dhaka # 孟加拉国标准时间 (UTC+6)
-
-timezone: Asia/Bangkok # 中南半岛时间 (UTC+7)
-
-timezone: Asia/Shanghai # 中国标准时间 (UTC+8)
-
-timezone: Asia/Tokyo # 日本标准时间 (UTC+9)
-
-timezone: Australia/Sydney # 澳大利亚东部标准时间 (UTC+10)
-
 ---
 
 # Aris
@@ -53,6 +20,7 @@ timezone: Australia/Sydney # 澳大利亚东部标准时间 (UTC+10)
 
 #### 学习内容 第01节
  - 01HelloWeb3.sol 创建 helloWeb3 程序,并在 remix 上进行编译和部署
+
  - 代码部分
 
 - ![image-20240923203935410](./content/Aris/image-20240923203935410.png)
@@ -92,6 +60,10 @@ timezone: Australia/Sydney # 澳大利亚东部标准时间 (UTC+10)
 
 - 也可以在 https://remix.ethereum.org 直接编写代码,然后编译和部署,但是我习惯在本地编写代码^_^
 
+- 第01节测验得分: 100, 答案: BBABCCBA
+
+    ---
+
 ### 2024.09.24
 
 #### 学习内容 第02 节: 值类型 第03节:函数类型
@@ -100,6 +72,7 @@ timezone: Australia/Sydney # 澳大利亚东部标准时间 (UTC+10)
   - 值类型: Value Type 
   - 引用类型: Reference Type
   - 映射类型: Mapping Type
+  
 - 值类型:
   - 布尔型
     - 与`&&`,或`||`,非`!` 等于`=`,不等于`!=`
@@ -115,9 +88,13 @@ timezone: Australia/Sydney # 澳大利亚东部标准时间 (UTC+10)
     - 定长字节数组时值类型,数组长度在声明以后不能改变,分为 bytes1,bytes8,bytes32等,最大bytes 32
   - 枚举 enum
     - 为uint 分配名称,从 0 开始.
+  
 - 合约部署截图
+
 - ![image-20240924200304434](./content/Aris/image-20240924200304434.png)
+
 - 第节: 函数类型
+
 - `function <function name>(<parameter types>) {internal|external|public|private} [pure|view|payable] [returns (<return types>)]`
   - function: 函数声明的固定写法
   - name: 函数名
@@ -131,8 +108,16 @@ timezone: Australia/Sydney # 澳大利亚东部标准时间 (UTC+10)
     - view: 外部变量,能读,不能写 | 无 gas 消耗 | 注意: 调用任何非标记 pure/view 函数需要支付 gas 费
     - payable: 调用函数可以转入 ETH (下面截图中,调用`minusPayable()` 传入了1 个 ETH,合约余额就受到了 1ETH)
   - retuns: 函数返回的变量类型和名称
+  
 - 合约部署截图
+
 - ![image-20240924204906756](./content/Aris/image-20240924204906756.png)
+
+- 第 02 节测验得分 100,答案:C,D,C,B,D
+
+- 第 03 节测验得分 100,答案:
+
+  ---
 
 ### 2024.09.25
 
@@ -141,19 +126,31 @@ timezone: Australia/Sydney # 澳大利亚东部标准时间 (UTC+10)
 1. 返回值: return 和 returns
     - return:函数主体,返回指定变量
     - returns:函数名后面,声明返回的变量类型及变量名
+
 2. 命名式返回
     - 在 returns 中标明返回变量的名称
     - solidity 会初始化这些变量,并且自动返回这些函数的值,无需 return.
     - 也可以在命名式返回中用 retrun 来返回变量
+
 3. 解构赋值
     - 读取所有返回值:声明变量,在`()`中按顺序逗号隔开
     - 读取部分返回值:声明要读取的变量,按顺序,不读的空着.
+
 4. 合约部署
     - ![image-20240925192211320](./content/Aris/image-20240925192211320.png)
 
+5. 第 04 节测验得分:100, 答案: ABCBABCB
+
+    ---
 
 ### 2024.09.26
 
-#### 学习内容 
+#### 学习内容 第 05 节: 5. 变量数据存储和作用域 storage/memory/calldata
+
+1. solidity 中的引用类型
+2. 数据位置
+3. 变量作用域
+4. 合约部署
+5. 第 05 节测验得分: 100, 答案: DBACDABA
 
 <!-- Content_END -->
