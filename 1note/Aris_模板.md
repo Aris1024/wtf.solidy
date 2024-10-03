@@ -16,9 +16,9 @@ timezone: Asia/Shanghai
 
 <!-- Content_START -->
 
-### 2024.10.02
+### 2024.10.03
 
-#### 学习内容 7. 映射类型 mapping
+#### 学习内容 
 
 1. 内容
 
