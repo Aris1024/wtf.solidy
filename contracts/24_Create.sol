@@ -7,7 +7,7 @@ contract Pair {
     address public token1;
 
     constructor() payable {
-        factory = msg.sender;
+        factory = msg.sender; // 调用该构造函数的账户或合约地址
     }
 
     function init(address _token0, address _token1) external {
@@ -25,9 +25,9 @@ contract PairFactory {
         address tokenA,
         address tokenB
     ) external returns (address pairAddr) {
-        Pair pair = new Pair();
-        pair.init(tokenA, tokenB);
-        pairAddr = address(pair);
+        Pair pair = new Pair(); // 创建币对合约(对象)
+        pair.init(tokenA, tokenB); // 调用初始化方法
+        pairAddr = address(pair); // 获得合约(对象)地址
         allPairs.push(pairAddr);
         getPair[tokenA][tokenB] = pairAddr;
         getPair[tokenB][tokenA] = pairAddr;

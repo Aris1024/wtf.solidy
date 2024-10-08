@@ -1068,9 +1068,89 @@ timezone: Asia/Shanghai
 
 #### 学习内容 25. CREATE2
 
-1. 内容
-2. 合约部署
-3. 第 25 节测验得分: 100, 答案:
+1. CREATE2
+
+    - 在智能合约部署在以太坊网络之前就能预测合约的地址
+    - 让合约地址独立于未来的事件
+
+2. `CREATE`如何计算地址
+
+    - **新地址 = hash(创建者地址, nonce)**
+    - 创建者地址:通常为部署的钱包地址或者合约地址
+    - nonce:
+        - 钱包地址:发送交易的总数
+        - 合约地址:创建的合约总数(新创建一个则 nonce++)
+    - `nonce`可能会随时间而改变，因此用`CREATE`创建的合约地址不好预测
+
+3. `CREATE2`如何计算地址
+
+    - **新地址 = hash("0xFF",创建者地址, salt, initcode)**
+    - `0xFF`：一个常数，避免和`CREATE`冲突
+    - `CreatorAddress`: 调用 CREATE2 的当前合约（创建合约）地址。
+    - `salt`（盐）：一个创建者指定的`bytes32`类型的值，它的主要目的是用来影响新创建的合约的地址。
+    - `initcode`: 新合约的初始字节码（合约的Creation Code和构造函数的参数）。
+
+4. CREATE2使用
+
+    - ```solidity
+        Contract x = new Contract{salt: _salt, value: _value}(params)
+        ```
+
+    - `Contract`是要创建的合约名
+
+    - `x`是合约对象（地址）
+
+    - `_salt`是指定的盐
+
+        - ```solidity
+            bytes32 salt = keccak256(abi.encodePacked(token0, token1));
+            ```
+
+        - 
+
+    - 如果构造函数是`payable`，可以创建时转入`_value`数量的`ETH`(**当前合约发送给新创建的合约的 ETH**)
+
+    - `params`是新合约构造函数的参数
+
+    - ```solidity
+        function calculateAddr(
+                address tokenA,
+                address tokenB
+            ) public view returns (address predicatedAddress) {
+                require(tokenA != tokenB, "identical address");
+                // 排序
+                (address token0, address token1) = tokenA < tokenB
+                    ? (tokenA, tokenB)
+                    : (tokenB, tokenA);
+                // salt
+                bytes32 salt = keccak256(abi.encodePacked(token0, token1));
+                predicatedAddress = address(
+                    uint160(
+                        uint(
+                            keccak256(
+                                abi.encodePacked(
+                                    bytes1(0xff),
+                                    address(this),
+                                    salt,
+                                    keccak256(type(Pair).creationCode)
+                                )
+                            )
+                        )
+                    )
+                );
+            }
+        ```
+
+5. 应用场景
+
+    - 交易所为新用户预留创建钱包合约地址
+    - 减少跨合约调用
+
+6. 合约部署
+
+    - ![image-20241008160730388](content/Aris/image-20241008160730388.png)
+
+7. 第 25 节测验得分: 100, 答案:ABCE
 
 ---
 
