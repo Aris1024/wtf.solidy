@@ -1156,6 +1156,64 @@ timezone: Asia/Shanghai
 
 ---
 
+#### 学习内容 26. 删除合约
+
+1. selfdestruct
+
+    - 删除智能合约，并将该合约剩余`ETH`转到指定地址
+    - 在一些情况下它会导致预期之外的合约语义，但由于目前还没有代替方案（有警告）
+
+2. EIP-6780
+
+    - 减少了`SELFDESTRUCT`操作码的功能
+    - 当前`SELFDESTRUCT`仅会被用来将合约中的ETH转移到指定地址
+    - 原先的删除功能只有在`合约创建-自毁`这两个操作处在同一笔交易时才能生效
+        - 已经部署的合约无法被`SELFDESTRUCT`
+        - 如果要使用原先的`SELFDESTRUCT`功能，必须在同一笔交易中创建并`SELFDESTRUCT`
+
+3. 使用
+
+    - `selfdestruct(_addr)；`
+        - 其中`_addr`是接收合约中剩余`ETH`的地址
+        - `_addr` 地址不需要有`receive()`或`fallback()`也能接收`ETH`
+
+4. 转移ETH功能
+
+    - 坎昆升级前，合约会被自毁。
+
+    - 坎昆升级后，合约依然存在，只是将合约包含的ETH转移到指定地址，而合约依然能够调用。
+
+    - ```solidity
+        function demo() public payable returns (DemoResult memory) {
+            DeleteContract del = new DeleteContract{value: msg.value}();
+            DemoResult memory res = DemoResult({
+                addr: address(del),
+                balance: del.getBalance(),
+                value: del.value()
+            });
+            del.deleteContract();
+            return res;
+        }
+        ```
+
+5. 注意点
+
+    - 对外提供合约销毁接口时，最好设置为只有合约所有者可以调用，可以使用函数修饰符`onlyOwner`进行函数声明。
+    - 当合约中有`selfdestruct`功能时常常会带来安全问题和信任问题
+    - 合约中的selfdestruct功能会为攻击者打开攻击向量
+    - 此功能还会降低用户对合约的信心
+
+6. 合约部署
+
+    - ![image-20241009171201571](content/Aris/image-20241009171201571.png)
+    - ![image-20241009171653387](content/Aris/image-20241009171653387.png)
+
+7. 第 26 节测验得分: 100, 答案: 
+
+---
+
+
+
 
 
 
