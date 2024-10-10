@@ -1212,6 +1212,112 @@ timezone: Asia/Shanghai
 
 ---
 
+### 2024.10.10
+
+#### 学习内容 27. ABI编码解码
+
+1. ABI
+
+    - Application Binary Interface，应用二进制接口
+    - 与以太坊智能合约交互的标准
+    - 数据基于他们的类型编码
+    - 由于编码后不包含类型信息，解码时需要注明它们的类型
+
+2. abi编码-abi.encode
+
+    - ```solidity
+        abi.encode(x, addr, name, array)
+        ```
+
+    - 将每个参数填充为32字节的数据，并拼接在一起
+
+    - `0x000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000007a58c0be72be218b41c608b7fe7c5bb630736c7100000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000005000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000043078414100000000000000000000000000000000000000000000000000000000`
+
+    - abi.encode将每个数据都填充为32字节，中间有很多0
+
+3. abi编码-abi.encodePacked
+
+    - ```solidity
+        abi.encodePacked(x, addr, name, array)
+        ```
+
+    - 将给定参数根据其所需最低空间编码,会把其中填充的很多`0`省略
+
+    - 比如，只用1字节来编码`uint8`类型
+
+    - `abi.encodePacked`对编码进行了压缩，长度比`abi.encode`短很多
+
+4. abi编码-abi.encodeWithSignature
+
+    - ```solidity
+        abi.encodeWithSignature("foo(uint256,address,string,uint256[2])", x, addr, name, array)
+        ```
+
+    - 第一个参数为`函数签名`
+
+    - 同于在`abi.encode`编码结果前加上了4字节的`函数选择器`
+
+5. abi编码-abi.encodeWithSelector
+
+    - ```solidity
+        abi.encodeWithSelector(bytes4(keccak256("foo(uint256,address,string,uint256[2])")), x, addr, name, array)
+        ```
+
+    - 第一个参数为`函数选择器`,是`函数签名`Keccak哈希的前4个字节
+
+    - 结果与`abi.encodeWithSignature`结果一样
+
+6. abi解码-abi.decode
+
+    - ```solidity
+        (dx, daddr, dname, darray) = abi.decode(data, (uint, address, string, uint[2]));
+        ```
+
+    - 解码时需要注明对应顺序和类型!!!
+
+7. 使用场景
+
+    - 合约开发,ABI常配合call来实现对合约的底层调用;
+
+        - ```solidity
+            bytes4 selector = contract.getValue.selector;
+            
+            bytes memory data = abi.encodeWithSelector(selector, _x);
+            (bool success, bytes memory returnedData) = address(contract).staticcall(data);
+            require(success);
+            
+            return abi.decode(returnedData, (uint256));
+            ```
+
+    - ethers.js中常用ABI实现合约的导入和函数调用;
+
+        - ```javascript
+            const wavePortalContract = new ethers.Contract(contractAddress, contractABI, signer);
+            const waves = await wavePortalContract.getAllWaves();
+            ```
+
+    - 对不开源合约进行反编译后，某些函数无法查到函数签名，可通过ABI进行调用;
+
+        - ```solidity
+            bytes memory data = abi.encodeWithSelector(bytes4(0x533ba33a));
+            
+            (bool success, bytes memory returnedData) = address(contract).staticcall(data);
+            require(success);
+            
+            return abi.decode(returnedData, (uint256));
+            ```
+
+8. 合约部署
+
+    - ![image-20241010142845934](content/Aris/image-20241010142845934.png)
+
+9. 第 27 节测验得分: 100, 答案: EBAD
+
+    - ![image-20241010145110306](content/Aris/image-20241010145110306.png)
+
+
+---
+
 
 
 
