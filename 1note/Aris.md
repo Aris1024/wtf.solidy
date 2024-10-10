@@ -1380,7 +1380,61 @@ timezone: Asia/Shanghai
 
 ---
 
+#### 学习内容 29. 函数选择器Selector
 
+1. 函数选择器
+
+    - 当我们调用智能合约时，本质上是向目标合约发送了一段`calldata`
+    - `calldata`中前4个字节是`selector`（函数选择器）
+    - msg.data `0x6a6278420000000000000000000000002c44b726adf1963ca47af88b284c06f30380fc78`
+
+2. 函数的id、selector和签名
+
+    - id:`函数签名`的`Keccak`哈希后的前4个字节 
+
+        - ```solidity
+            bytes4(keccak256("mint(address)"))
+            ```
+
+    - 当`selector`与`method id`相匹配时，即表示调用该函数
+
+    - 函数签名:`函数名（逗号分隔的参数类型)`
+
+    - 在同一个智能合约中，不同的函数有不同的函数签名
+
+3. 计算`method id`时，需要通过函数名和函数的参数类型来计算
+
+    - `bytes4(keccak256("函数名(参数类型1,参数类型2,...)"))`
+    - 基础类型参数
+        - **bytes4**(keccak256("selectorElementaryParam(uint256,bool)"));
+    - 固定长度类型参数
+        - **bytes4**(keccak256("selectorFixedSizeParam(uint256[3])"));
+    - 可变长度类型参数
+        - **bytes4**(keccak256("selectorNoFixedSizeParam(uint256[],string)"));
+    - 映射类型参数
+        - **bytes4**(keccak256("selectorMappingParam(address,(uint256,bytes),uint256[],uint8)"));
+
+4. 使用selector
+
+    - ```solidity
+        (bool success1, bytes memory data1) = address(this).call(abi.encodeWithSelector(0x3ec37834, 1, 0));
+        ```
+
+5. 合约部署
+
+    - ![image-20241010171501953](content/Aris/image-20241010171501953.png)
+
+6. 第 29 节测验得分: 100, 答案:DDCBD
+
+---
+
+学习内容: 30. Try Catch
+
+1. 呢
+2. 合约部署
+3. 第 30 节测验得分: 100, 答案:
+
+---
 
 
 
