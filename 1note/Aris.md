@@ -1318,7 +1318,67 @@ timezone: Asia/Shanghai
 
 ---
 
+#### 学习内容 28. Hash
 
+1. 哈希函数
+
+    - 将任意长度的消息转换为一个固定长度的值
+
+2. hash 性质
+
+    - 单向性：从输入的消息到它的哈希的正向运算简单且唯一确定，而反过来非常难，只能靠暴力枚举。
+    - 灵敏性：输入的消息改变一点对它的哈希改变很大。
+    - 高效性：从输入的消息到哈希的运算高效。
+    - 均一性：每个哈希值被取到的概率应该基本相等。
+    - 抗碰撞性：
+        - 弱抗碰撞性：给定一个消息`x`，找到另一个消息`x'`，使得`hash(x) = hash(x')`是困难的。
+        - 强抗碰撞性：找到任意`x`和`x'`，使得`hash(x) = hash(x')`是困难的。
+
+3. hash 应用
+
+    - 生成数据唯一标识
+    - 加密签名
+    - 安全加密
+
+4. keccak256
+
+    - ```solidity
+        哈希 = keccak256(数据);
+        ```
+
+5. Keccak256和sha3
+
+    - Ethereum和Solidity智能合约代码中的SHA3是指Keccak256
+    - 不是标准的NIST-SHA3(区别:SHA3最终完成标准化时，NIST调整了填充算法)
+    - **所以SHA3就和keccak计算的结果不一样**
+
+6. 生成数据唯一标识
+
+    - ```solidity
+        function hash(
+            uint _num,
+            string memory _string,
+            address _addr
+            ) public pure returns (bytes32) {
+            return keccak256(abi.encodePacked(_num, _string, _addr));
+        }
+        ```
+
+7. 弱抗碰撞性
+
+    - 给定一个消息`x`，找到另一个消息`x'`，使得`hash(x) = hash(x')`是困难的
+
+8. 强抗碰撞性
+
+    - 任意不同的`x`和`x'`，使得`hash(x) = hash(x')`是困难的
+
+9. 合约部署
+
+    - ![image-20241010151540679](content/Aris/image-20241010151540679.png)
+
+10. 第 28 节测验得分: 100, 答案:DCDBA
+
+---
 
 
 
