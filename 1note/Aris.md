@@ -1474,7 +1474,11 @@ timezone: Asia/Shanghai
    - ![image-20241010205657406](./content/Aris/image-20241010205657406.png)
    - ![image-20241010205741049](./content/Aris/image-20241010205741049.png)
 
-3. 第 30 节测验得分: 100, 答案:DCBB
+3. 第 30 节测验得分: 100, 答案:DCBB (我觉得第2题的答案是 A)
+
+   - ![image-20241010212332966](./content/Aris/image-20241010212332966.png)
+   - ![image-20241010213239154](./content/Aris/image-20241010213239154.png)
+
 4. 至此 102 全部完成
 
    - ![image-20241010211644145](./content/Aris/image-20241010211644145.png)
