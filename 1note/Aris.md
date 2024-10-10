@@ -1428,11 +1428,57 @@ timezone: Asia/Shanghai
 
 ---
 
-学习内容: 30. Try Catch
+#### 学习内容: 30. Try Catch
 
-1. 呢
+1. try-catch
+
+   - 只能用于 external 函数 或者 创建合约时 constructor 函数
+   - ```solidity
+     try externalContract.f() returns(returnType val){
+         // call成功的情况下 运行一些代码
+     } catch {
+         // call失败的情况下 运行一些代码
+     }
+     ```
+   - `externalContract.f()` 是某个外部合约调用,调用成功执行 try 函数体,失败 catch 函数体
+   - 也可以 this.f(),因为被视为外部调用,但是不能在构造函数中使用;
+   - 如果 f() 有返回值,必须在 后面声明 returns(类型 变量)
+
+     - try 函数体可以使用返回的变量
+     - 如果是创建合约,则返回值时合约的变量(实例)
+
+   - catch 模块支持捕获特殊的异常原因
+
+     - ```solidity
+       try externalContract.f() returns(returnType){
+           // call成功的情况下 运行一些代码
+       } catch Error(string memory /*reason*/) {
+           // 捕获revert("reasonString") 和 require(false, "reasonString")
+       } catch Panic(uint /*errorCode*/) {
+           // 捕获Panic导致的错误 例如assert失败 溢出 除零 数组访问越界
+       } catch (bytes memory /*lowLevelData*/) {
+           // 如果发生了revert且上面2个异常类型匹配都失败了 会进入该分支
+           // 例如revert() require(false) revert自定义类型的error
+       }
+       ```
+
+     - catch Error(string memory reason) 捕获revert("reasonString") 和 require(false, "reasonString")
+
+     - catch Panic(uint errorCode) 捕获Panic导致的错误 例如assert失败 溢出 除零 数组访问越界
+
+     - catch (bytes memory lowLevelData)  其他异常(兜底)
+
 2. 合约部署
-3. 第 30 节测验得分: 100, 答案:
+
+   - ![image-20241010205615472](./content/Aris/image-20241010205615472.png)
+   - ![image-20241010205657406](./content/Aris/image-20241010205657406.png)
+   - ![image-20241010205741049](./content/Aris/image-20241010205741049.png)
+
+3. 第 30 节测验得分: 100, 答案:DCBB
+4. 至此 102 全部完成
+
+   - ![image-20241010211644145](./content/Aris/image-20241010211644145.png)
+
 
 ---
 
