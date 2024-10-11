@@ -1743,8 +1743,6 @@ timezone: Asia/Shanghai
             }
             ```
 
-        - 
-
 3. 合约部署
 
     - 先部署31 课的 ERC20 合约,得到地址后,再部署 airdrop 合约
