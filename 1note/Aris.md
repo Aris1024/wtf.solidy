@@ -1599,6 +1599,83 @@ timezone: Asia/Shanghai
 
 ---
 
+#### 学习内容32. 代币水龙头
+
+1. 代币水龙头
+
+    - 代币水龙头就是让用户免费领代币的网站/应用
+
+2. ERC20水龙头合约
+
+    - ```solidity
+        // SPDX-License-Identifier: MIT
+        pragma solidity ^0.8.22;
+        import "./lib/IERC20.sol";
+        
+        contract Faucet {
+            uint256 public amountAllowed = 100;
+            address public tokenAddress;
+            mapping(address => bool) public requestedAddress;
+            event SendToken(address indexed receiver, uint256 indexed amount);
+        
+            constructor(address _token) {
+                tokenAddress = _token;
+            }
+        
+            function requestTokens() external {
+                require(
+                    !requestedAddress[msg.sender],
+                    "Each address can only be collected once."
+                );
+                IERC20 token = IERC20(tokenAddress); // 创建合约对象
+                bool valid = token.balanceOf(address(this)) >= amountAllowed;
+                require(valid, "Faucet is Empty.");
+                token.transfer(msg.sender, amountAllowed); // 领水
+                requestedAddress[msg.sender] = true; // 记录
+                emit SendToken(msg.sender, amountAllowed); // 释放事件
+            }
+        }
+        ```
+
+    - 状态变量
+
+        - uint256 public amountAllowed = 100; // 一次领多少个
+        - address public tokenAddress; // token 代币合约地址
+        - mapping(address => bool) public requestedAddress; // 记录已领取的钱包地址
+
+    - 事件
+
+        - event SendToken(address indexed receiver, uint256 indexed amount); // 领水事件
+
+    - 函数
+
+        - requestTokens()
+        - 检查 1: 不能多次领水
+        - 检查 2: 水龙头合约的持有代币睡了要足够领水
+
+3. 合约部署
+
+    - 现部署31 课的 ERC20 合约,得到地址后,在部署 faucet 合约
+        - ERC20:`0x36C32B5bc196DFB77C4A123Ec9C9E49356Cca07B`
+        - faucet: `0xE58469710853b35Dae8635EDA1484D4f404eaEa0`
+        - 合约部署者: `0x5B38Da6a701c568545dCfcB03FcB875f56beddC4`
+        - 领水者: `0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2`
+    - 先在 `ERC20` 合约中 `mint` 10000 个给合约部署者
+    - 接着,在 `ERC20` 合约中 `transfer` 1000 个给 faucet 合约
+    - 然后,领水者调用`faucet`合约 的领水函数 `requestTokens()`
+    - 最后,在`ERC20` 合约中领水者调用 `balanceOf()` 检查自己的代币数量
+    - 数量为 100,则领水成功!
+    - ![image-20241011143539265](content/Aris/image-20241011143539265.png)
+
+---
+
+#### 学习内容33. 空投合约
+
+1. 空投 Arisdrop
+2. 合约部署
+
+---
+
 
 
 <!-- Content_END -->
