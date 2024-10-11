@@ -1594,6 +1594,22 @@ timezone: Asia/Shanghai
 
 5. 合约部署
 
+    - 下面图片中的 transferFrom()方法错了,应该是
+
+    - ```solidity
+        function transferFrom(
+            address from,
+            address to,
+            uint256 amount
+        ) external override returns (bool) {
+            allowance[from][msg.sender] -= amount;
+            balanceOf[from] -= amount;
+            balanceOf[to] += amount;
+            emit Transfer(from, to, amount);
+            return true;
+        }
+        ```
+
     - ![image-20241011135556973](content/Aris/image-20241011135556973.png)
 
 
@@ -1655,7 +1671,7 @@ timezone: Asia/Shanghai
 
 3. 合约部署
 
-    - 现部署31 课的 ERC20 合约,得到地址后,在部署 faucet 合约
+    - 先部署31 课的 ERC20 合约,得到地址后,再部署 faucet 合约
         - ERC20:`0x36C32B5bc196DFB77C4A123Ec9C9E49356Cca07B`
         - faucet: `0xE58469710853b35Dae8635EDA1484D4f404eaEa0`
         - 合约部署者: `0x5B38Da6a701c568545dCfcB03FcB875f56beddC4`
@@ -1672,7 +1688,78 @@ timezone: Asia/Shanghai
 #### 学习内容33. 空投合约
 
 1. 空投 Arisdrop
-2. 合约部署
+
+    - 空投是币圈中一种营销策略，项目方将代币免费发放给特定用户群体。
+    - 为了拿到空投资格，用户通常需要完成一些简单的任务，如测试产品、分享新闻、介绍朋友等。
+    - 项目方通过空投可以获得种子用户，而用户可以获得一笔财富，两全其美。
+    - 利用智能合约批量发放`ERC20`代币，可以显著提高空投效率。
+
+2. 代码
+
+    1. multiTransferToken() 空投代币
+
+        - ```solidity
+            // 多个地址转账 ERC20 代币
+            function multiTransferToken(
+                address _token,
+                address[] calldata _addresses,
+                uint256[] calldata _amounts
+            ) external {
+                // 1. 检查 二者长度
+                require(_addresses.length == _amounts.length, "Addresses and amounts arrays are not equal in length.");
+                // 2. 检查 授权额度
+                IERC20 token = IERC20(_token);
+                uint sum = getSum(_amounts);
+                require(token.allowance(msg.sender, address(this)) >= sum, "ERC20 token authorization amount is insufficient.");
+                // 3. 遍历转账代币(空投 代币)
+                for (uint i = 0; i < _addresses.length; i++) {
+                    token.transferFrom(msg.sender, _addresses[i], _amounts[i]);
+                }
+            
+            }
+            ```
+
+    2. multiTransferETH() 空投 ETH
+
+        - ```solidity
+            // 多个地址转账 ETH (payable)
+            function multiTransferETH(
+                address[] calldata _addresses,
+                uint256[] calldata _amounts
+            ) external payable {
+                // 1. 检查 二者长度
+                require(_addresses.length == _amounts.length, "Addresses and amounts arrays are not equal in length.");
+                // 2. 检查 转入 ETH数量与要发送的 ETH 总数量 是否相等 (少了不行,多了浪费)
+                uint sum = getSum(_amounts);
+                require(msg.value == sum, "Transfer amount error");
+                // 3. 遍历 转入 ETH (空投 EHT)
+                for (uint i = 0; i < _addresses.length; i++) {
+                    // 转账ETH 的方法有 transfer,send,call 推荐用 call (第 20 节课 SendETH)
+                    (bool success, ) = _addresses[i].call{value: _amounts[i]}("");
+                    if (!success) {
+                        failTransferList[_addresses[i]] = _amounts[i]; // 记录转账失败的地址 (人性化一点!!!)
+                    }
+                }
+            }
+            ```
+
+        - 
+
+3. 合约部署
+
+    - 先部署31 课的 ERC20 合约,得到地址后,再部署 airdrop 合约
+        - 部署者:0x5B38Da6a701c568545dCfcB03FcB875f56beddC4
+        - ERC20 合约: 0xd20977056F58b3Fb3533b7C2b9028a19Fbcd2358
+        - airdrop 合约 0x9Dfc8C3143E01cA01A90c3E313bA31bFfD9C1BA9
+        - 领空投地址: ["0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2", "0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db"]
+        - 领 EHT 地址: ["0x5c6B0f7Bf3E7ce046039Bd8FABdfD3f9F5021678", "0x03C6FcED478cBbC9a4FAB34eF9f40767739D1Ff7"]
+    - 部署者在 ERC20合约 mint 10000 代币,然后授权 10000 代币给airdrop合约
+    - 部署者调用 airdrop multiTransferToken()方法 空投代币
+    - 部署者调用 airdrop multiTransferETH()方法 空投ETH
+    - ![image-20241011164412936](content/Aris/image-20241011164412936.png)
+    - ![image-20241011165818980](content/Aris/image-20241011165818980.png)
+    - ![image-20241011165916810](content/Aris/image-20241011165916810.png)
+    - ![image-20241011165141503](content/Aris/image-20241011165141503.png)
 
 ---
 

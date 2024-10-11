@@ -42,7 +42,7 @@ contract ERC20 is IERC20 {
         address to,
         uint256 amount
     ) external override returns (bool) {
-        allowance[from][to] -= amount;
+        allowance[from][msg.sender] -= amount;
         balanceOf[from] -= amount;
         balanceOf[to] += amount;
         emit Transfer(from, to, amount);
