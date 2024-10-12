@@ -1882,7 +1882,59 @@ timezone: Asia/Shanghai
 
     - ![image-20241012145907856](content/Aris/image-20241012145907856.png)
 
-    - 价格越来越低
+    - 随时间变化,价格越来越低
+
+---
+
+#### 学习内容 36. 默克尔树 Merkle Tree
+
+1. Merkle Tree
+
+    - 默克尔树或哈希树,区块链的底层加密技术，被比特币和以太坊区块链广泛采用
+    - `Merkle Tree`是一种自下而上构建的加密树，每个叶子是对应数据的哈希，而每个非叶子为它的`2`个子节点的哈希。
+    - ![image-20241012165729660](content/Aris/image-20241012165729660.png)
+    - 验证节点有效性
+        - 必须知道 root(根节点)
+        - 必须知道 兄弟节点的 hash
+        - 必须知道 根节点的右子树的根节点
+        - ![image-20241012170251883](content/Aris/image-20241012170251883.png)
+
+2. 合约部署
+
+    - [MerleTree.js example](https://lab.miguelmota.com/merkletreejs/example/)
+
+        - 创建 4 个叶子节点(领 NFT 白名单地址) 
+
+        - ```
+            [
+                "0x14723A09ACff6D2A60DcdF7aA4AFf308FDDC160C",
+                "0x4B0897b0513fdC7C541B6d9D7E929C4e5364D2dB",
+                "0x583031D1113aD414F02576BD6afaBfb302140225",
+                "0xdD870fA1b7C4700F2BD7f44238821C26f7392148"
+            ]
+            ```
+
+        - 为了验证准确性,这几个跟课程中地址不一样
+
+    - ![image-20241012164536912](content/Aris/image-20241012164536912.png)
+
+    - 要验证的节点
+
+        - `0x14723A09ACff6D2A60DcdF7aA4AFf308FDDC160C`
+        - 对应 hash: `0x9da258265696d227eef589fd6cd14671a82aa2963ec2214eb048fca5441c4a7e`
+
+    - 证据
+
+        - 兄弟叶子节点
+            - `0x0xafe7c546eb582218cf94b848c36f3b058e2518876240ae6100c4ef23d38f3e07`
+        - 根的右子树节点
+            - `0x0407ee111665e57ca7528a3cff18a63a107414ce11259ae85c972a4714b44713`
+
+    - 根
+
+        - `0x85b4523f53e74d9b3c4e6ffb8d1bcd686967e36599de76c60eeb7c8e88c4bce2`
+
+    - ![image-20241012165606240](content/Aris/image-20241012165606240.png)
 
 ---
 
