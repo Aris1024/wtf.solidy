@@ -1852,6 +1852,40 @@ timezone: Asia/Shanghai
 
 ---
 
+#### 学习内容 35. 荷兰拍卖
+
+1. 荷兰拍卖 (Dutch Auction)
+
+    - 减价拍卖
+    - 拍卖标的的竞价由高到低依次递减直到第一个竞买人应价（达到或超过底价）时击槌成交的一种拍卖
+    - ![image-20241012144656925](content/Aris/image-20241012144656925.png)
+    - 荷兰拍卖的价格由最高慢慢下降，能让项目方获得最大的收入
+    - 拍卖持续较长时间（通常6小时以上），可以避免`gas war`
+
+2. 合约部署
+
+    - 使用 openzeppelin 的 Ownable 接口
+
+        - ```solidity
+            import "@openzeppelin/contracts/access/Ownable.sol";
+            ```
+
+        - 需要安装依赖包
+
+        - ```shell
+            pnpm i @openzeppelin/contracts
+            ```
+
+        - ![image-20241012145023851](content/Aris/image-20241012145023851.png)
+
+    - ![image-20241012145854415](content/Aris/image-20241012145854415.png)
+
+    - ![image-20241012145907856](content/Aris/image-20241012145907856.png)
+
+    - 价格越来越低
+
+---
+
 
 
 <!-- Content_END -->
