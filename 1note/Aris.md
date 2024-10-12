@@ -1761,6 +1761,97 @@ timezone: Asia/Shanghai
 
 ---
 
+### 2024.10.12
+
+#### 学习内容 34. ERC721
+
+1. ERC721
+
+    - `BTC`和`ETH`这类代币都属于同质化代币
+    - 世界中很多物品是不同质的，其中包括房产、古董、虚拟艺术品等等，这类物品无法用同质化代币抽象
+    - `ERC721`标准，来抽象非同质化的物品
+    - NFT:`Non-Fungible Token`
+
+2. EIP与ERC
+
+    - EIP: 以太坊改进建议 `Ethereum Improvement Proposals`
+    - ERC: 以太坊意见征求稿 `Ethereum Request For Comment`
+    - EIP包含ERC
+
+3. ERC165
+
+    - 智能合约可以声明它支持的接口，供其他合约检查
+
+    - ```solidity
+        interface IERC165 {
+            /**
+             * @dev 如果合约实现了查询的`interfaceId`，则返回true
+             * 规则详见：https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section]
+             *
+             */
+            function supportsInterface(bytes4 interfaceId) external view returns (bool);
+        }
+        ```
+
+    - ```solidity
+        function supportsInterface(bytes4 interfaceId) external pure override returns (bool)
+        {
+            return
+                interfaceId == type(IERC721).interfaceId ||
+                interfaceId == type(IERC165).interfaceId;
+        }
+        ```
+
+4. IERC721事件
+
+    - `Transfer`事件：在转账时被释放，记录代币的发出地址`from`，接收地址`to`和`tokenid`。
+    - `Approval`事件：在授权时释放，记录授权地址`owner`，被授权地址`approved`和`tokenid`。
+    - `ApprovalForAll`事件：在批量授权时释放，记录批量授权的发出地址`owner`，被授权地址`operator`和授权与否的`approved`。
+
+5. IERC721函数
+
+    - `balanceOf`：返回某地址的NFT持有量`balance`。
+    - `ownerOf`：返回某`tokenId`的主人`owner`。
+    - `transferFrom`：普通转账，参数为转出地址`from`，接收地址`to`和`tokenId`。
+    - `safeTransferFrom`：安全转账（如果接收方是合约地址，会要求实现`ERC721Receiver`接口）。参数为转出地址`from`，接收地址`to`和`tokenId`。
+    - `approve`：授权另一个地址使用你的NFT。参数为被授权地址`approve`和`tokenId`。
+    - `getApproved`：查询`tokenId`被批准给了哪个地址。
+    - `setApprovalForAll`：将自己持有的该系列NFT批量授权给某个地址`operator`。
+    - `isApprovedForAll`：查询某地址的NFT是否批量授权给了另一个`operator`地址。
+    - `safeTransferFrom`：安全转账的重载函数，参数里面包含了`data`。
+
+6. IERC721Receiver
+
+    - NFT 可以转给钱包也可以转给合约
+
+    - 接收 NFT 合约必须实现IERC721Receiver接口,防止转入黑洞
+
+    - ```solidity
+        // ERC721接收者接口：合约必须实现这个接口来通过安全转账接收ERC721
+        interface IERC721Receiver {
+            function onERC721Received(
+                address operator,
+                address from,
+                uint tokenId,
+                bytes calldata data
+            ) external returns (bytes4);
+        }
+        ```
+
+7. IERC721Metadata
+
+    - `ERC721`的拓展接口
+    - `name()`：返回代币名称。
+    - `symbol()`：返回代币代号。
+    - `tokenURI()`：通过`tokenId`查询`metadata`的链接`url`，`ERC721`特有的函数。
+
+8. 合约部署 
+
+    - ![image-20241012112136518](content/Aris/image-20241012112136518.png)
+
+
+---
+
 
 
 <!-- Content_END -->

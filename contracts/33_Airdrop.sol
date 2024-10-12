@@ -48,7 +48,6 @@ contract Aridrop {
                 failTransferList[_addresses[i]] = _amounts[i]; // 记录转账失败的地址 (人性化一点!!!)
             }
         }
-
     }
 
     function withdrawFromFailList(address _to) public {
