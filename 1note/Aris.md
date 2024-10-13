@@ -2289,9 +2289,48 @@ timezone: Asia/Shanghai
 
 #### 学习内容 40. ERC1155
 
-1. 内容
-2. 合约部署
+1. EIP1155
+    - 允许一个合约包含多个同质化和非同质化代币
+    - 每一种代币都有一个`id`作为唯一标识,每个`id`对应一种代币
+    - 每种代币都有一个网址`uri`来存储它的元数据(tokenURI)
+    - 如果某个`id`对应的代币总量为`1`，那么它就是非同质化代币
+    - 如果某个`id`对应的代币总量大于`1`，那么他就是同质化代币
+2. IERC1155事件
+    - `TransferSingle`事件：单类代币转账事件，在单币种转账时释放。
+    - `TransferBatch`事件：批量代币转账事件，在多币种转账时释放。
+    - `ApprovalForAll`事件：批量授权事件，在批量授权时释放。
+    - `URI`事件：元数据地址变更事件，在`uri`变化时释放。
+3. IERC1155函数
+    - `balanceOf()`：单币种余额查询，返回`account`拥有的`id`种类的代币的持仓量。
+    - `balanceOfBatch()`：多币种余额查询，查询的地址`accounts`数组和代币种类`ids`数组的长度要相等。
+    - `setApprovalForAll()`：批量授权，将调用者的代币授权给`operator`地址。。
+    - `isApprovedForAll()`：查询批量授权信息，如果授权地址`operator`被`account`授权，则返回`true`。
+    - `safeTransferFrom()`：安全单币转账，将`amount`单位`id`种类的代币从`from`地址转账给`to`地址。如果`to`地址是合约，则会验证是否实现了`onERC1155Received()`接收函数。
+    - `safeBatchTransferFrom()`：安全多币转账，与单币转账类似，只不过转账数量`amounts`和代币种类`ids`变为数组，且长度相等。如果`to`地址是合约，则会验证是否实现了`onERC1155BatchReceived()`接收函数。
+4. ERC1155接收合约
+    - `ERC1155`要求代币接收合约继承`IERC1155Receiver`并实现两个接收函数
+        - onERC1155Received(), 实现并返回自己的选择器`0xf23a6e61`
+        - onERC1155BatchReceived, 实现并返回自己的选择器`0xbc197c81`
+5. 合约部署
+    - mint
+        - ![image-20241013141748068](content/Aris/image-20241013141748068.png)
+    - 查询余额
+        - ![image-20241013141854872](content/Aris/image-20241013141854872.png)
+    - 批量 mint
+        - ![image-20241013142552689](content/Aris/image-20241013142552689.png)
+    - 批量余额
+        - ![image-20241013142827049](content/Aris/image-20241013142827049.png)
+    - 批量转账
+        - ![image-20241013144808049](content/Aris/image-20241013144808049.png)
+    - 再次查询接受者余额(批量)
+        - ![image-20241013144959309](content/Aris/image-20241013144959309.png)
 
 ---
+
+学习内容: 
+
+---
+
+
 
 <!-- Content_END -->
