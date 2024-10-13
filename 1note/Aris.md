@@ -2351,28 +2351,113 @@ timezone: Asia/Shanghai
 
 ---
 
-学习内容: 42. 分账
+#### 学习内容: 42. 分账
 
-1. 内容
-2. 合约部署
-
----
-
-学习内容: 43. 线性释放
-
-1. 内容
-2. 合约部署
-
----
-
-学习内容: 44. 代币锁
-
-1. 内容
-2. 合约部署
+1. 分账
+    - 分账就是按照一定比例分钱财,区块链中,事先把每个人应分的比例写在智能合约中
+    - 获得收入后，再由智能合约来进行分账
+2. 分账合约
+    - 在创建合约时定好分账受益人payees和每人的份额shares。
+    - 份额可以是相等，也可以是其他任意比例。
+    - 在该合约收到的所有ETH中，每个受益人将能够提取与其分配的份额成比例的金额。
+    - 付款不会自动转入账户，而是保存在此合约中。
+    - 受益人通过调用release()函数触发实际转账。
+3. 合约部署
+    - ![image-20241013154520912](content/Aris/image-20241013154520912.png)
+    - ![image-20241013155449566](content/Aris/image-20241013155449566.png)
 
 ---
 
-学习内容: 45. 时间锁
+#### 学习内容: 43. 线性释放
+
+1. 线性释放
+
+    - 代币在归属期内匀速释放
+
+2. 事件
+
+    - 提币事件
+    - `event ERC20Released(address indexed token, uint256 amount);`
+
+3. 变量
+
+    - ```solidity
+        mapping(address => uint256) public erc20Released; // 代币地址->释放数量的映射
+        address public immutable beneficiary; // 受益人地址
+        uint256 public immutable start; // 归属期起始时间戳
+        uint256 public immutable duration; // 归属期 (秒)
+        ```
+
+4. 函数
+
+    - 构造函数：初始化受益人地址，归属期(秒), 起始时间戳。参数为受益人地址`beneficiaryAddress`和归属期`durationSeconds`。为了方便，起始时间戳用的部署时的区块链时间戳`block.timestamp`。
+    - `release()`：提取代币函数，将已释放的代币转账给受益人。调用了`vestedAmount()`函数计算可提取的代币数量，释放`ERC20Released`事件，然后将代币`transfer`给受益人。参数为代币地址`token`。
+    - `vestedAmount()`：根据线性释放公式，查询已经释放的代币数量。开发者可以通过修改这个函数，自定义释放方式。参数为代币地址`token`和查询的时间戳`timestamp`。
+
+5. 合约部署
+
+    - 先部署 ERC20,mint 10000 代币给自己
+    - 部署 线性释放合约(自己,100 秒),然后再 ERC20 合约中给线性释放合约转账 10000
+    - 点击 release,账户(自己)收到 7100 代币 (时间过去了 29 秒)
+    - ![image-20241013161032624](content/Aris/image-20241013161032624.png)
+
+---
+
+#### 学习内容: 44. 代币锁
+
+1. 代币锁(Token Locker)
+
+    - 时间锁合约，它可以把合约中的代币锁仓一段时间，受益人在锁仓期满后可以取走代币
+    - 代币锁一般是用来锁仓流动性提供者`LP`代币的
+
+2. LP代币
+
+    - 区块链中，用户在去中心化交易所`DEX`上交易代币
+    - `DEX`和中心化交易所(`CEX`)不同，去中心化交易所使用自动做市商(`AMM`)机制，需要用户或项目方提供资金池，以使得其他用户能够即时买卖
+    - 用户/项目方需要质押相应的币对（比如`ETH/DAI`）到资金池中
+    - 作为补偿，`DEX`会给他们铸造相应的流动性提供者`LP`代币凭证，证明他们质押了相应的份额，供他们收取手续费。
+    - 避免 rug-pull, 防止项目方过早跑路
+
+3. 代币锁合约
+
+    - 事件
+
+        - `okenLockStart`：锁仓开始事件
+
+        - `Release`：代币释放事件
+
+        - ```solidity
+            event TokenLockStart(address indexed beneficiary, address indexed token, uint256 startTime, uint256 lockTime);
+            event Release(address indexed beneficiary, address indexed token, uint256 releaseTime, uint256 amount);
+            ```
+
+    - 状态变量
+
+        - `token`：锁仓代币地址。
+        - `beneficiary`：受益人地址。
+        - `locktime`：锁仓时间(秒)。
+        - `startTime`：锁仓起始时间戳(秒)。
+
+    - 函数
+
+        - 构造函数：初始化代币合约，受益人地址，以及锁仓时间
+        - `release()`：在锁仓期满后，将代币释放给受益人 (手动调用)
+
+4. 合约部署
+
+    - 部署ERC20 合约,给自己 mint 10000 代币
+        - ![image-20241013163446054](content/Aris/image-20241013163446054.png)
+    - 部署 代币锁合约,token: ERC20 合约,受益人:自己,时间:180 秒
+    - ERC20 转账给代币锁合约 10000 代币
+        - ![image-20241013163758609](content/Aris/image-20241013163758609.png)
+    - 在 180 秒内调用,无法取出代币
+        - ![image-20241013163930131](content/Aris/image-20241013163930131.png)
+    - 锁仓期结束,可以取出代币
+        - ![image-20241013164030212](content/Aris/image-20241013164030212.png)
+
+---
+
+#### 学习内容: 45. 时间锁
 
 1. 内容
 2. 合约部署
