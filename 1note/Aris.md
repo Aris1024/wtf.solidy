@@ -2511,21 +2511,108 @@ timezone: Asia/Shanghai
 
 ---
 
-学习内容: 46. 代理合约
+#### 学习内容: 46. 代理合约
 
-1. 内容
-2. 合约部署
+1. 代理模式
+
+    - 合约部署在链上之后，代码是不可变的,合约部署后进行修改需使用代理模式
+    - 代理模式将合约数据和逻辑分开，分别保存在不同合约中
+    - 代理合约（Proxy）通过`delegatecall`，将函数调用全权委托给逻辑合约（Implementation）执行，再把最终的结果返回给调用者（Caller）
+    - 可升级：当我们需要升级合约的逻辑时，只需要将代理合约指向新的逻辑合约。
+    - 省gas：如果多个合约复用一套逻辑，我们只需部署一个逻辑合约，然后再部署多个只保存数据的代理合约，指向逻辑合约。
+
+2. 代理合约
+
+    - ![image-20241013181657976](content/Aris/image-20241013181657976.png)
+
+    - call
+
+        - ```solidity
+            ( , bytes memory data) = proxy.call(abi.encodeWithSignature("increment()"));
+            ```
+
+    - delegatecall (使用内联汇编 inline assembly)
+
+        - ```solidity
+            /**
+            * @dev 回调函数，将本合约的调用委托给 `implementation` 合约
+            * 通过assembly，让回调函数也能有返回值
+            */
+            fallback() external payable {
+                address _implementation = implementation;
+                assembly {
+                    // 将msg.data拷贝到内存里
+                    // calldatacopy操作码的参数: 内存起始位置，calldata起始位置，calldata长度
+                    calldatacopy(0, 0, calldatasize())
+            
+                    // 利用delegatecall调用implementation合约
+                    // delegatecall操作码的参数：gas, 目标合约地址，input mem起始位置，input mem长度，output area mem起始位置，output area mem长度
+                    // output area起始位置和长度位置，所以设为0
+                    // delegatecall成功返回1，失败返回0
+                    let result := delegatecall(gas(), _implementation, 0, calldatasize(), 0, 0)
+            
+                    // 将return data拷贝到内存
+                    // returndata操作码的参数：内存起始位置，returndata起始位置，returndata长度
+                    returndatacopy(0, 0, returndatasize())
+            
+                    switch result
+                    // 如果delegate call失败，revert
+                    case 0 {
+                        revert(0, returndatasize())
+                    }
+                    // 如果delegate call成功，返回mem起始位置为0，长度为returndatasize()的数据（格式为bytes）
+                    default {
+                        return(0, returndatasize())
+                    }
+                }
+            }
+            ```
+
+3. 注意点:
+
+    - 合约语境上下文,不存在的默认初始默认值
+    - ![image-20241013182025872](content/Aris/image-20241013182025872.png)
+    - 通过低级调用,即使用函数 selector 调用,会执行 fallback()函数
+
+4. 合约部署
+
+    - 部署 logic 合约,调用 increment 函数,返回 100
+        - ![image-20241013180540343](content/Aris/image-20241013180540343.png)
+    - 部署 proxy 合约,implemention 写 Logic 合约地址
+        - ![image-20241013180730742](content/Aris/image-20241013180730742.png)
+        - ![image-20241013181053097](content/Aris/image-20241013181053097.png)
+    - 部署 Caller 填写 proxy 合约地址
+        - ![image-20241013181237964](content/Aris/image-20241013181237964.png)
+    - 调用 increase(),返回 1
+        - ![image-20241013181408473](content/Aris/image-20241013181408473.png)
 
 ---
 
-学习内容: 47. 可升级合约
+#### 学习内容: 47. 可升级合约
 
-1. 内容
+1. 可升级合约
+
+    - 可以更改逻辑合约的代理合约
+
+    - ![image-20241013183832604](content/Aris/image-20241013183832604.png)
+
+    - ```solidity
+        implementation.delegatecall(msg.data)
+        ```
+
+    - 合约`有选择器冲突`的问题，存在安全隐患
+
 2. 合约部署
+
+    - 部署 Logic1 和 Logic2 合约,部署 升级合约,使用 Logic1 合约地址
+    - 低级调用,选择器 0xc2985578,查看 words 为 old
+        - ![image-20241013183546830](content/Aris/image-20241013183546830.png)
+    - 升级合约调用 upgrade, 参数传递 Logic2 的地址,低级调用,选择器 0xc2985578,查看 words 为 new
+        - ![image-20241013183738606](content/Aris/image-20241013183738606.png)
 
 ---
 
-学习内容: 48. 透明代理
+#### 学习内容: 48. 透明代理
 
 1. 内容
 2. 合约部署
