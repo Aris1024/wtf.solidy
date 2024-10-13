@@ -56,7 +56,7 @@ contract SignatureNFT is ERC721 {
     constructor(
         string memory _name,
         string memory _symbol,
-        address _signer
+        bytes memory _signer
     ) ERC721(_name, _symbol) {
         signer = _signer;
     }

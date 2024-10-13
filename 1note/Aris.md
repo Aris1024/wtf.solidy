@@ -2009,13 +2009,190 @@ timezone: Asia/Shanghai
             }	
         ```
 
-4. 合约部署
+4. 注意点
+
+    - 签名是链下的，不需要`gas`，因此这种白名单发放模式比`Merkle Tree`模式还要经济
+    - 用户要请求中心化接口去获取签名，不可避免的牺牲了一部分去中心化
+    - 白名单可以动态变化
+
+5. 合约部署
 
     - ![image-20241013081650125](content/Aris/image-20241013081650125.png)
 
 
 ---
 
+#### 学习内容 38. NFT交易所
 
+1. 设计逻辑
+
+    - 卖家：出售`NFT`的一方，可以挂单`list`、撤单`revoke`、修改价格`update`。
+    - 买家：购买`NFT`的一方，可以购买`purchase`。
+    - 订单：卖家发布的`NFT`链上订单，一个系列的同一`tokenId`最多存在一个订单，其中包含挂单价格`price`和持有人`owner`信息。当一个订单交易完成或被撤单后，其中信息清零。
+
+2. 代码
+
+    - ```solidity
+        // SPDX-License-Identifier: MIT
+        pragma solidity ^0.8.22;
+        
+        import "./lib/IERC721.sol";
+        import "./lib/IERC721Receiver.sol";
+        import "./34_ArisApe.sol";
+        
+        contract NFTSwap is IERC721Receiver {
+            event List(
+                address indexed saller,
+                address indexed nftAddr,
+                uint256 indexed tokenId,
+                uint256 price
+            );
+            event Purchase(
+                address indexed buyer,
+                address indexed nftAddr,
+                uint256 indexed tokenId,
+                uint256 price
+            );
+            event Revoke(
+                address indexed saller,
+                address indexed nftAddr,
+                uint256 indexed tokenId
+            );
+            event Update(
+                address indexed saller,
+                address indexed nftAddr,
+                uint256 indexed tokenId,
+                uint256 newPrice
+            );
+        
+            struct Order {
+                address owner;
+                uint256 price;
+            }
+            // NFT Order 映射
+            mapping(address => mapping(uint256 => Order)) public nftList;
+        
+            receive() external payable {}
+        
+            fallback() external payable {}
+        
+            // 挂单: 卖家上架 NFT, _nftAddress:NFT 地址, _tokenId: 对应 ID, _price: 价格 (wei)
+            function list(
+                address _nftAddress,
+                uint256 _tokenId,
+                uint256 _price
+            ) public {
+                require(_price > 0, "Invalid price");
+                IERC721 nft = IERC721(_nftAddress);
+                require(nft.getApproved(_tokenId) == address(this), "Need Approval");
+                Order storage order = nftList[_nftAddress][_tokenId];
+                order.owner = msg.sender;
+                order.price = _price;
+                nft.safeTransferFrom(msg.sender, address(this), _tokenId);
+                emit List(msg.sender, _nftAddress, _tokenId, _price);
+            }
+        
+            // 购买: 买家购买 NFT, _nftAddress:NFT 地址, _tokenId: 对应 ID
+            function purchase(address _nftAddress, uint256 _tokenId) public payable {
+                Order storage order = nftList[_nftAddress][_tokenId];
+                // 检查: 订单是否存在,可以换成 order.owner != address(0), 而不是判断价格(有点歪)
+                require(order.price > 0, "Invalid price");
+                // 检查: 发送的钱要足够购买
+                require(msg.value > order.price, "Increse price");
+                IERC721 nft = IERC721(_nftAddress);
+                // 检查: 当前合约必须是持有者
+                require(nft.ownerOf(_tokenId) == address(this), "Invalid Order");
+        
+                nft.safeTransferFrom(address(this), msg.sender, _tokenId);
+                payable(order.owner).transfer(order.price); // 向卖家转账
+                payable(msg.sender).transfer(msg.value - order.price); // 剩余的退回
+                delete nftList[_nftAddress][_tokenId]; // 删除 order
+                emit Purchase(msg.sender, _nftAddress, _tokenId, order.price);
+            }
+        
+            // 撤单: 卖家取消挂单
+            function revoke(address _nftAddress, uint256 _tokenId) public {
+                Order storage order = nftList[_nftAddress][_tokenId];
+                require(order.owner == msg.sender, "Not owner");
+        
+                IERC721 nft = IERC721(_nftAddress);
+                require(nft.ownerOf(_tokenId) == address(this), "Invalid order");
+        
+                nft.safeTransferFrom(address(this), msg.sender, _tokenId);
+                delete nftList[_nftAddress][_tokenId];
+                emit Revoke(msg.sender, _nftAddress, _tokenId);
+            }
+        
+            // 更新: 卖家更新挂单价格
+            function update(
+                address _nftAddress,
+                uint256 _tokenId,
+                uint256 _newPrice
+            ) public {
+                Order storage order = nftList[_nftAddress][_tokenId];
+                // 检查: 订单是否存在,可以换成 order.owner != address(0), 而不是判断价格(有点歪)
+                require(order.price > 0, "Invalid price");
+                // 检查: 支持有人发起
+                require(order.owner == msg.sender, "Not owner");
+        
+                IERC721 nft = IERC721(_nftAddress);
+                require(nft.ownerOf(_tokenId) == address(this), "Invalid Order");
+        
+                order.price = _newPrice;
+                emit Update(msg.sender, _nftAddress, _tokenId, _newPrice);
+            }
+        
+            function onERC721Received(
+                address operator,
+                address from,
+                uint tokenId,
+                bytes calldata data
+            ) external pure override returns (bytes4) {
+                return IERC721Receiver.onERC721Received.selector;
+            }
+        }
+        ```
+
+3. 合约部署
+
+    - 部署 ArisApe NFT 合约,并给自己 mint tokenId 为 666 和 888 的 NFT
+    - ![image-20241013094943516](content/Aris/image-20241013094943516.png)
+    - 部署 NFTSwap 合约,并让 NFT合约 授权 666 和 888 给NFTSwap 合约
+    - ![image-20241013095416973](content/Aris/image-20241013095416973.png)
+    - 上架 666 和 888 (价格分别为 6666 和 8888)
+    - ![image-20241013095633540](content/Aris/image-20241013095633540.png)
+    - 查询订单 666和 888
+    - ![image-20241013095904262](content/Aris/image-20241013095904262.png)
+    - 更新价格,666 价格更新成 7777
+    - ![image-20241013100217651](content/Aris/image-20241013100217651.png)
+    - 下架 666
+        - 查询 666 的 owner 是 NFTSwap 合约,下架后再查询其 owner 是当前钱包账户
+        - ![image-20241013100505349](content/Aris/image-20241013100505349.png)
+        - ![image-20241013100550171](content/Aris/image-20241013100550171.png)
+    - 购买 888
+        - 查询 888 的 owner 是 当前NFTSwap合约(尾号352d),使用钱包(5cb2)购买,在查询 888 的 owner,发现已经变成钱包(5cb2); 价格是 8888,支付 10000,需退回 1112;
+        - ![image-20241013101056239](content/Aris/image-20241013101056239.png)
+        - ![image-20241013101248154](content/Aris/image-20241013101248154.png)
+        - 再次查询订单,发现已经没有 666 和 888
+            - ![image-20241013101456218](content/Aris/image-20241013101456218.png)
+            - ![image-20241013101526211](content/Aris/image-20241013101526211.png)
+
+
+
+---
+
+#### 学习内容 39. 链上随机数
+
+1. 内容
+2. 合约部署
+
+---
+
+#### 学习内容 40. ERC1155
+
+1. 内容
+2. 合约部署
+
+---
 
 <!-- Content_END -->
