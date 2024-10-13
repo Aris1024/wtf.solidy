@@ -2614,15 +2614,72 @@ timezone: Asia/Shanghai
 
 #### 学习内容: 48. 透明代理
 
-1. 内容
-2. 合约部署
+1. 透明代理
+
+    - 管理员可能会因为“函数选择器冲突”，在调用逻辑合约的函数时，误调用代理合约的可升级函数
+
+    - 那么限制管理员的权限，不让他调用任何逻辑合约的函数，就能解决冲突
+
+        - 管理员仅能调用代理合约的可升级函数对合约升级，不能通过回调函数调用逻辑合约
+        - 其它用户不能调用可升级函数，但是可以调用逻辑合约的函数
+
+    - ```solidity
+        function upgrade(address newImplementation) external {
+            if (msg.sender != admin) revert();
+            implementation = newImplementation;
+        }
+        fallback() external payable {
+            require(msg.sender != admin);
+            (bool success, bytes memory data) = implementation.delegatecall(msg.data);
+        }
+        ```
+
+2. 注意点:
+
+    - 每次用户调用函数时，都会多一步是否为管理员的检查，消耗更多gas
+    - 透明代理仍是大多数项目方选择的方案
+
+3. 合约部署
+
+    - 部署 Foo 合约,selector1,select2 均为0x42966c68
+    - 部署 Logic1, Logic2, 透明代理合约(使用 Logic1 地址),通过低级调用(选择器：0xc2985578),提示失败 `Caller must not be admin!`
+        - ![image-20241013185437430](content/Aris/image-20241013185437430.png)
+    - 切换钱包,通过低级调用(选择器：0xc2985578),提示成功,显示 words 为 old
+        - ![image-20241013185613902](content/Aris/image-20241013185613902.png)
+    - 切换回去,调用 upgrade,地址为 Logic2 地址,在切换钱包,低级调用,显示为 new
+        - ![image-20241013185854135](content/Aris/image-20241013185854135.png)
 
 ---
 
-学习内容: 49. 通用可升级代理
+#### 学习内容: 49. 通用可升级代理
 
-1. 内容
+1. 通用可升级代理(UUPS: universal upgradeable proxy standard)
+
+    - 将升级函数放在逻辑合约中,如果有其它函数与升级函数存在“选择器冲突”，编译时就会报错
+
+    - ![image-20241013191806714](content/Aris/image-20241013191806714.png)
+
+    - ```solidity
+        // 升级函数，改变逻辑合约地址，只能由admin调用。选择器：0x0900f010
+        // UUPS中，逻辑合约中必须包含升级函数，不然就不能再升级了。
+        function upgrade(address newImplementation) external {
+            require(msg.sender == admin);
+            implementation = newImplementation;
+        }
+        ```
+
+    - 相比透明代理，UUPS更省gas，但也更复杂
+
 2. 合约部署
+
+    - 部署UUPS新旧逻辑合约UUPS1和UUPS2
+    - 部署UUPS代理合约UUPSProxy，将implementation地址指向旧逻辑合约UUPS1
+    - 利用选择器0xc2985578，在代理合约中调用旧逻辑合约UUPS1的foo()函数，将words的值改为"old"
+        - ![image-20241013191218022](content/Aris/image-20241013191218022.png)
+    - https://abi.hashex.org/ 在线编码,拷贝数据到低级调用地址栏,粘贴数据
+        - ![image-20241013191443418](content/Aris/image-20241013191443418.png)
+    - 再次调用,word 改成 new
+        - ![image-20241013191637394](content/Aris/image-20241013191637394.png)
 
 ---
 
