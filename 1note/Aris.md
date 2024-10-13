@@ -2183,8 +2183,107 @@ timezone: Asia/Shanghai
 
 #### 学习内容 39. 链上随机数
 
-1. 内容
-2. 合约部署
+1. 链上随机数 (不安全的随机数)
+
+    - 以太坊上所有数据都是公开透明（`public`）且确定性（`deterministic`）的，它没法像其他编程语言一样给开发者提供生成随机数的方法
+
+    - ```solidity
+        /** 
+        * 链上伪随机数生成
+        * 利用keccak256()打包一些链上的全局变量/自定义变量
+        * 返回时转换成uint256类型
+        */
+        function getRandomOnchain() public view returns(uint256){
+            // remix运行blockhash会报错
+            bytes32 randomBytes = keccak256(abi.encodePacked(block.timestamp, msg.sender, blockhash(block.number-1)));
+        
+            return uint256(randomBytes);
+        }
+        ```
+
+2. 链下随机数 (使用 `Chainlink`提供`VRF`（可验证随机函数）服务)
+
+    - 链下生成随机数，然后通过预言机把随机数上传到链上
+
+3. 代码
+
+    - 安装 chainlink
+
+    - ![image-20241013134058781](content/Aris/image-20241013134058781.png)
+
+    - chainlink VRF 升级到了 2.5版本,所以教程中的代码不可用,翻阅最新文档
+
+        - https://docs.chain.link/vrf/v2-5/getting-started
+
+    - ```solidity
+        // SPDX-License-Identifier: MIT
+        pragma solidity ^0.8.22;
+        
+        // 新版本路径发生了变化, 跟教程中不一样了
+        import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+        import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+        
+        // 使用 sepolia 网络部署 !!!!
+        contract RandomNumberConsumer is VRFConsumerBaseV2Plus {
+            // 申请的 ID
+            uint256 s_subId; // 这个 ID 变长了,需要使用 uint256;
+            // 存放得到的 requestId 和 随机数
+            uint256 public requestId;
+            uint256[] public randomWords;
+            // 数据从这里获取: https://docs.chain.link/vrf/v2-5/supported-networks#sepolia-testnet
+            // VRF Coordinator 合约地址 (sepolia)
+            address vrfCoordinator = 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B;
+            // 500 gwei Key Hash
+            bytes32 s_keyHash =
+                0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
+            uint16 s_minimumRequestConfirmations = 3;
+            uint32 s_callbackGasLimit = 200_000;
+            uint32 s_numWords = 3;
+        
+            constructor(uint256 _subId) VRFConsumerBaseV2Plus(vrfCoordinator) {
+                s_subId = _subId;
+                // s_coordinator 不用声明,父合约中有该状态变量,直接使用即可 
+            }
+        
+            function requestRandomWords() external {
+                requestId = s_vrfCoordinator.requestRandomWords(
+                    VRFV2PlusClient.RandomWordsRequest({
+                        keyHash: s_keyHash,
+                        subId: s_subId,
+                        requestConfirmations: s_minimumRequestConfirmations,
+                        callbackGasLimit: s_callbackGasLimit,
+                        numWords: s_numWords,
+                        extraArgs: VRFV2PlusClient._argsToBytes(
+                            VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
+                        )
+                    })
+                );
+            }
+        
+            function fulfillRandomWords(
+                uint256 _requestId,
+                uint256[] calldata _randomWords
+            ) internal virtual override {
+                randomWords = _randomWords;
+            }
+        }
+        ```
+
+    - 
+
+4. 合约部署
+
+    - [Chainlink VRF v2.5 sepolia testnet](https://docs.chain.link/vrf/v2-5/supported-networks#sepolia-testnet) 在这里获取数据
+    - ![image-20241013121555741](content/Aris/image-20241013121555741.png)
+    - ![image-20241013130148721](content/Aris/image-20241013130148721.png)
+    - ![image-20241013130352478](content/Aris/image-20241013130352478.png)
+    - ![image-20241013130620767](content/Aris/image-20241013130620767.png)
+    - ![image-20241013130649322](content/Aris/image-20241013130649322.png)
+    - ![image-20241013130705677](content/Aris/image-20241013130705677.png)
+    - ![image-20241013132050429](content/Aris/image-20241013132050429.png)
+    - ![image-20241013132157414](content/Aris/image-20241013132157414.png)
+    - 当前是 pending 状态等待结束(我这里一直显示 pending.....)
+    - ![image-20241013133243629](content/Aris/image-20241013133243629.png)
 
 ---
 
